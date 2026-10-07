@@ -1,0 +1,16 @@
+import { chromium } from "playwright";
+const out = process.argv[2];
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+const errors = [];
+page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+page.on("pageerror", (e) => errors.push(String(e)));
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+await page.screenshot({ path: `${out}/home-full.png`, fullPage: true });
+await page.goto("http://localhost:3000/cook", { waitUntil: "networkidle" });
+await page.screenshot({ path: `${out}/cook-intro.png`, fullPage: true });
+await page.setViewportSize({ width: 390, height: 844 });
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+await page.screenshot({ path: `${out}/home-mobile.png`, fullPage: false });
+console.log("console errors:", errors.length ? errors : "none");
+await browser.close();
