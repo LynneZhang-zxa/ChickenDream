@@ -1,0 +1,2 @@
+# ChickenDream
+Voice AI project
