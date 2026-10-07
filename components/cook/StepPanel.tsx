@@ -26,7 +26,7 @@ export function StepPanel({
     .filter((i): i is NonNullable<typeof i> => Boolean(i));
 
   return (
-    <section aria-live="polite" className="space-y-5">
+    <section aria-live="polite" className="min-w-0 space-y-5">
       {finished ? (
         <div className="rounded-3xl bg-forest p-8 text-cream shadow-float">
           <p className="text-sm font-semibold uppercase tracking-wider text-leaf">All {total} steps done</p>

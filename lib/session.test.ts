@@ -3,7 +3,6 @@ import { CREAMY_GARLIC_CHICKEN, describeIngredient, formatAmount, spokenAmount }
 import {
   cancelTimer,
   currentStep,
-  goToSleep,
   jumpToStep,
   newSession,
   nextStep,
@@ -21,12 +20,16 @@ describe("steps", () => {
   it("starts on step one", () => {
     const { result } = currentStep(fresh());
     expect(result.stepNumber).toBe(1);
-    expect(result.spoken).toContain("Step one of");
-    expect(result.spoken).toContain(CREAMY_GARLIC_CHICKEN.steps[0].instruction);
+    expect(result.whereTheyAre).toContain("step one of");
+    expect(result.spoken).toBe(CREAMY_GARLIC_CHICKEN.steps[0].instruction);
   });
 
-  it("advances and finishes", () => {
+  it("first next_step reveals step one, then advances and finishes", () => {
     let s = fresh();
+    const first = nextStep(s, T0);
+    expect(first.result.stepNumber).toBe(1);
+    expect(first.state.started).toBe(true);
+    s = first.state;
     for (let i = 1; i < total; i++) {
       const t = nextStep(s, T0 + i);
       s = t.state;
@@ -45,11 +48,11 @@ describe("steps", () => {
   it("will not go before the first step", () => {
     const t = previousStep(fresh());
     expect(t.state.stepIndex).toBe(0);
-    expect(t.result.spoken).toContain("already on the first step");
+    expect(t.result.spoken).toContain("very first step");
   });
 
   it("goes back from finished to the last step", () => {
-    let s = fresh();
+    let s = nextStep(fresh()).state;
     for (let i = 0; i < total; i++) s = nextStep(s).state;
     const t = previousStep(s);
     expect(t.state.stepIndex).toBe(total - 1);
@@ -113,8 +116,4 @@ describe("timers and substitutions", () => {
     expect(s.substitutions[0].substitute).toBe("whole milk and butter");
   });
 
-  it("sleep sets a voice command", () => {
-    const t = goToSleep(fresh(), T0 + 5);
-    expect(t.state.voiceCommand).toEqual({ name: "sleep", at: T0 + 5 });
-  });
 });

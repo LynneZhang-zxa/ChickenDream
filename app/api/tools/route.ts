@@ -4,7 +4,6 @@ import type { ToolName } from "@/lib/agent-config";
 import {
   cancelTimer,
   currentStep,
-  goToSleep,
   jumpToStep,
   markTimerFired,
   nextStep,
@@ -61,15 +60,12 @@ export async function POST(req: Request) {
     case "set_servings":
       t = setServings(session, Number(args.servings), now);
       break;
-    case "go_to_sleep":
-      t = goToSleep(session, now);
-      break;
     default:
       return NextResponse.json({ error: `Unknown tool ${body.tool}` }, { status: 400 });
   }
 
   const next = { ...t.state, toolCalls: session.toolCalls + 1, callId: body.call?.id ?? session.callId };
   await saveSession(next);
-  console.log(`[sous] tool ${body.tool} ${JSON.stringify(args)} -> step ${next.stepIndex + 1} :: ${t.result.spoken}`);
+  console.log(`[sous] ${session.id.slice(0, 8)} tool ${body.tool} ${JSON.stringify(args)} -> step ${next.stepIndex + 1} :: ${t.result.spoken}`);
   return NextResponse.json(t.result);
 }

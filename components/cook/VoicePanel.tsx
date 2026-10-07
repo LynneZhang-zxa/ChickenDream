@@ -55,7 +55,7 @@ export function VoicePanel({
   const timers = state?.timers.filter((t) => t.status === "running") ?? [];
 
   return (
-    <aside className="space-y-4 lg:sticky lg:top-20">
+    <aside className="min-w-0 space-y-4 lg:sticky lg:top-20 lg:self-start">
       <div className="rounded-3xl bg-paper p-6 text-center shadow-card ring-1 ring-line/60">
         <div className="flex justify-center">
           <MicButton status={status} onClick={onMic} />

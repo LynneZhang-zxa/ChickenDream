@@ -48,7 +48,7 @@ export default function CookPage() {
             recipe={recipe}
           />
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             <StepPanel
               recipe={recipe}
               state={voice.state!}
@@ -75,7 +75,7 @@ export default function CookPage() {
 
 function Intro({ recipe, status, error, onStart }: { recipe: typeof CREAMY_GARLIC_CHICKEN; status: string; error: string | null; onStart: () => void }) {
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div>
         <p className="text-sm font-semibold uppercase tracking-wider text-forest">{recipe.cuisine} · {recipe.totalMinutes} minutes · {recipe.calories} kcal per serving</p>
         <h1 className="mt-2 font-display text-5xl leading-[1] sm:text-6xl">{recipe.title}</h1>

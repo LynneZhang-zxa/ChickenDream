@@ -1,0 +1,17 @@
+import { chromium } from "playwright";
+const out = process.argv[2];
+const browser = await chromium.launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", "--autoplay-policy=no-user-gesture-required"] });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, permissions: ["microphone"] });
+const page = await ctx.newPage();
+await page.goto("http://localhost:3000/cook", { waitUntil: "networkidle" });
+await page.getByRole("button", { name: "Start cooking" }).click();
+await page.getByText(/Listening|Sous is speaking/).first().waitFor({ timeout: 30000 });
+await page.waitForTimeout(1500);
+console.log("in-call scrollWidth:", await page.evaluate(() => document.documentElement.scrollWidth), "viewport 1440");
+await page.screenshot({ path: `${out}/cook-live-fixed.png`, fullPage: false });
+await page.setViewportSize({ width: 390, height: 844 });
+await page.waitForTimeout(500);
+console.log("mobile scrollWidth:", await page.evaluate(() => document.documentElement.scrollWidth), "viewport 390");
+await page.screenshot({ path: `${out}/cook-live-mobile.png`, fullPage: false });
+await page.getByRole("button", { name: "End cooking" }).click().catch(() => {});
+await browser.close();

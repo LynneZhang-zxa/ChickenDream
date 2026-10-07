@@ -17,10 +17,12 @@ export type SessionState = {
   secret: string;
   /** 0-based. Equal to steps.length means the dish is finished. */
   stepIndex: number;
+  /** False until the cook has been given the first step; the first next_step reveals step one. */
+  started: boolean;
   servings: number;
   substitutions: Substitution[];
   timers: Timer[];
-  /** Set by the go_to_sleep tool; the browser mutes the mic when it sees a new value. */
+  /** Reserved for a future voice "pause" command. */
   voiceCommand: { name: "sleep"; at: number } | null;
   status: "cooking" | "finished";
   callId: string | null;
@@ -45,6 +47,7 @@ export function newSession(recipeId: string, id: string, secret: string, now = D
     recipeId,
     secret,
     stepIndex: 0,
+    started: false,
     servings: recipe.servings,
     substitutions: [],
     timers: [],
@@ -73,9 +76,10 @@ export function describeStep(recipe: Recipe, state: SessionState, step: Step, in
     .map((name) => recipe.ingredients.find((i) => i.name === name))
     .filter((i): i is NonNullable<typeof i> => Boolean(i))
     .map((i) => describeIngredient(i, recipe.servings, state.servings, "spoken"));
-  const spoken = `Step ${numWord(index + 1)} of ${numWord(total)}, ${step.title}. ${step.instruction}`;
   return {
-    spoken,
+    spoken: step.instruction,
+    note: "This is the cook's current step now.",
+    whereTheyAre: `step ${numWord(index + 1)} of ${numWord(total)}, ${step.title}`,
     stepNumber: index + 1,
     totalSteps: total,
     title: step.title,
@@ -98,14 +102,16 @@ function finishedResult(recipe: Recipe): ToolResult {
   };
 }
 
-export function currentStep(state: SessionState): Transition {
+export function currentStep(state: SessionState, now = Date.now()): Transition {
   const recipe = mustRecipe(state.recipeId);
   if (state.stepIndex >= recipe.steps.length) return { state, result: finishedResult(recipe) };
-  return { state, result: describeStep(recipe, state, recipe.steps[state.stepIndex], state.stepIndex) };
+  const next = state.started ? state : touch(state, { started: true }, now);
+  return { state: next, result: describeStep(recipe, next, recipe.steps[next.stepIndex], next.stepIndex) };
 }
 
 export function nextStep(state: SessionState, now = Date.now()): Transition {
   const recipe = mustRecipe(state.recipeId);
+  if (!state.started) return currentStep(state, now); // the first "what's next" is step one
   if (state.stepIndex >= recipe.steps.length) {
     return { state, result: { ...finishedResult(recipe), spoken: `You're already done. ${recipe.title} is finished, so go enjoy it.` } };
   }
@@ -122,10 +128,10 @@ export function previousStep(state: SessionState, now = Date.now()): Transition 
   const recipe = mustRecipe(state.recipeId);
   if (state.stepIndex === 0) {
     const r = describeStep(recipe, state, recipe.steps[0], 0);
-    return { state, result: { ...r, spoken: `You're already on the first step. ${r.spoken}` } };
+    return { state, result: { ...r, spoken: `This is the very first step. ${r.spoken}` } };
   }
   const idx = Math.min(state.stepIndex - 1, recipe.steps.length - 1);
-  const next = touch(state, { stepIndex: idx, status: "cooking" }, now);
+  const next = touch(state, { stepIndex: idx, status: "cooking", started: true }, now);
   return { state: next, result: describeStep(recipe, next, recipe.steps[idx], idx) };
 }
 
@@ -137,7 +143,7 @@ export function jumpToStep(state: SessionState, stepNumber: number, now = Date.n
     return { state, result: { ...cur, spoken: `This recipe has ${numWord(total)} steps, so there's no step ${numWord(Math.round(stepNumber) || 0)}. ${cur.spoken}` } };
   }
   const idx = Math.round(stepNumber) - 1;
-  const next = touch(state, { stepIndex: idx, status: "cooking" }, now);
+  const next = touch(state, { stepIndex: idx, status: "cooking", started: true }, now);
   return { state: next, result: describeStep(recipe, next, recipe.steps[idx], idx) };
 }
 
@@ -203,7 +209,3 @@ export function markTimerFired(state: SessionState, timerId: string, now = Date.
   return { state: next, result: { spoken: `The ${t.label} timer is done.`, timer: next.timers.find((x) => x.id === timerId) } };
 }
 
-export function goToSleep(state: SessionState, now = Date.now()): Transition {
-  const next = touch(state, { voiceCommand: { name: "sleep", at: now } }, now);
-  return { state: next, result: { spoken: "Okay, I'll go quiet. Tap the mic when you want me back.", sleeping: true } };
-}

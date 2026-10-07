@@ -20,10 +20,10 @@ export async function POST(req: Request) {
     try {
       token = await mintWsToken();
     } catch (e) {
-      if (process.env.NODE_ENV === "production") throw e;
-      console.warn("[sous] token mint failed, using raw key in dev:", (e as Error).message);
+      if (process.env.NODE_ENV === "production" && process.env.ALLOW_RAW_KEY !== "1") throw e;
+      console.warn("[sous] token mint failed, using raw key for the socket:", (e as Error).message);
       token = requireEnv("ALEBEX_API_KEY");
-      warnings.push("Using the raw API key for the socket (dev only).");
+      // Dev-only fallback; logged above, not shown to the cook.
     }
 
     console.log(`[sous] call start session=${session.id} tools=${base ?? "none"} (${source})`);

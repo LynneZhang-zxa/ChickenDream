@@ -8,7 +8,7 @@ describe("agent config limits", () => {
   it("context fits the 4,000 char limit and names the current step", () => {
     const c = buildContext(CREAMY_GARLIC_CHICKEN, s);
     expect(c.length).toBeLessThanOrEqual(4000);
-    expect(c).toContain("step one of nine");
+    expect(c).toContain("haven't started yet");
   });
   it("tools are 8 or fewer with valid names and descriptions", () => {
     const tools = buildTools("https://example.com", s);
