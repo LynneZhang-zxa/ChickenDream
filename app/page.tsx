@@ -6,12 +6,12 @@ import { Nav } from "@/components/Nav";
 import { Toast, useToast } from "@/components/Toast";
 import { CREAMY_GARLIC_CHICKEN } from "@/lib/recipe";
 
-const POPULAR: { title: string; emoji: string; tone: Tone; minutes: number; kcal: number; cuisine: string; live?: boolean }[] = [
-  { title: CREAMY_GARLIC_CHICKEN.title, emoji: CREAMY_GARLIC_CHICKEN.emoji, tone: "butter", minutes: CREAMY_GARLIC_CHICKEN.totalMinutes, kcal: CREAMY_GARLIC_CHICKEN.calories, cuisine: "Italian", live: true },
-  { title: "Tomato Beef Stew", emoji: "🍲", tone: "coral", minutes: 60, kcal: 520, cuisine: "Chinese" },
-  { title: "Chicken Curry", emoji: "🍛", tone: "butter", minutes: 40, kcal: 480, cuisine: "Indian" },
-  { title: "Bibimbap", emoji: "🍚", tone: "green", minutes: 25, kcal: 560, cuisine: "Korean" },
-  { title: "Garlic Butter Shrimp", emoji: "🍤", tone: "sky", minutes: 20, kcal: 430, cuisine: "Quick & easy" },
+const POPULAR: { title: string; image: string; minutes: number; kcal: number; cuisine: string; live?: boolean }[] = [
+  { title: CREAMY_GARLIC_CHICKEN.title, image: "/recipes/creamy-garlic-chicken.jpg", minutes: CREAMY_GARLIC_CHICKEN.totalMinutes, kcal: CREAMY_GARLIC_CHICKEN.calories, cuisine: "Italian", live: true },
+  { title: "Tomato Beef Stew", image: "/recipes/tomato-beef-stew.jpg", minutes: 60, kcal: 520, cuisine: "Chinese" },
+  { title: "Chicken Curry", image: "/recipes/chicken-curry.jpg", minutes: 40, kcal: 480, cuisine: "Indian" },
+  { title: "Bibimbap", image: "/recipes/bibimbap.jpg", minutes: 25, kcal: 560, cuisine: "Korean" },
+  { title: "Garlic Butter Shrimp", image: "/recipes/garlic-butter-shrimp.jpg", minutes: 20, kcal: 430, cuisine: "Quick & easy" },
 ];
 
 const CHIPS = ["All", "Chinese", "Italian", "Japanese", "Korean", "Indian", "Mexican", "Quick & easy", "Healthy"];
@@ -123,7 +123,7 @@ export default function Home() {
               const inner = (
                 <>
                   <div className="relative">
-                    <FoodTile emoji={r.emoji} tone={r.tone} className="aspect-[4/3] w-full" size="text-7xl" />
+                    <img src={r.image} alt={r.title} className="block aspect-[4/3] w-full object-cover" loading="lazy" />
                     {r.live ? (
                       <span className="absolute left-3 top-3 rounded-full bg-coral px-2.5 py-1 text-xs font-semibold text-white">Cook by voice</span>
                     ) : (
