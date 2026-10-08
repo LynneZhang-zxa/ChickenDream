@@ -45,3 +45,4 @@ Deploy to Vercel with `ALEBEX_API_KEY` and `ALEBEX_AGENT_ID` set. Tool webhooks 
 deployment's own URL. The ALEBEX short-lived socket token endpoint currently rejects the
 account's key, so production also needs `ALLOW_RAW_KEY=1` to open the socket with the API key
 itself; only do that for a private demo URL.
+
