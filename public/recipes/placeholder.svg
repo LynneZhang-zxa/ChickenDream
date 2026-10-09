@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Recipe photo unavailable">
+  <rect width="800" height="600" fill="#f5f1e8"/>
+  <circle cx="400" cy="260" r="130" fill="#ffffff" stroke="#79916c" stroke-width="12"/>
+  <circle cx="400" cy="260" r="90" fill="none" stroke="#e2e7dc" stroke-width="8"/>
+  <text x="400" y="460" text-anchor="middle" font-family="sans-serif" font-size="30" fill="#4c6344">Recipe photo coming soon</text>
+</svg>

@@ -7,7 +7,7 @@ import { MicButton } from "@/components/cook/MicButton";
 import { StepPanel } from "@/components/cook/StepPanel";
 import { VoicePanel } from "@/components/cook/VoicePanel";
 import { useVoiceCall } from "@/components/voice/useVoiceCall";
-import { CREAMY_GARLIC_CHICKEN, describeIngredient } from "@/lib/recipe";
+import { CREAMY_GARLIC_CHICKEN, describeIngredient, nutritionLabel } from "@/lib/recipe";
 
 export default function CookPage() {
   const voice = useVoiceCall();
@@ -77,7 +77,7 @@ function Intro({ recipe, status, error, onStart }: { recipe: typeof CREAMY_GARLI
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wider text-forest">{recipe.cuisine} · {recipe.totalMinutes} minutes · {recipe.calories} kcal per serving</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-forest">{recipe.cuisine} · {recipe.totalMinutes} minutes · {nutritionLabel(recipe)}{recipe.nutrition.status === "estimated" ? " per serving" : ""}</p>
         <h1 className="mt-2 font-display text-5xl leading-[1] sm:text-6xl">{recipe.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-ink/75">{recipe.description}</p>
 

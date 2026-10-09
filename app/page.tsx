@@ -4,15 +4,7 @@ import Link from "next/link";
 import { FoodTile, type Tone } from "@/components/FoodTile";
 import { Nav } from "@/components/Nav";
 import { Toast, useToast } from "@/components/Toast";
-import { CREAMY_GARLIC_CHICKEN } from "@/lib/recipe";
-
-const POPULAR: { title: string; image: string; minutes: number; kcal: number; cuisine: string; live?: boolean }[] = [
-  { title: CREAMY_GARLIC_CHICKEN.title, image: "/recipes/creamy-garlic-chicken.jpg", minutes: CREAMY_GARLIC_CHICKEN.totalMinutes, kcal: CREAMY_GARLIC_CHICKEN.calories, cuisine: "Italian", live: true },
-  { title: "Tomato Beef Stew", image: "/recipes/tomato-beef-stew.jpg", minutes: 60, kcal: 520, cuisine: "Chinese" },
-  { title: "Chicken Curry", image: "/recipes/chicken-curry.jpg", minutes: 40, kcal: 480, cuisine: "Indian" },
-  { title: "Bibimbap", image: "/recipes/bibimbap.jpg", minutes: 25, kcal: 560, cuisine: "Korean" },
-  { title: "Garlic Butter Shrimp", image: "/recipes/garlic-butter-shrimp.jpg", minutes: 20, kcal: 430, cuisine: "Quick & easy" },
-];
+import { CREAMY_GARLIC_CHICKEN, POPULAR_RECIPES, getRecipe, nutritionLabel } from "@/lib/recipe";
 
 const CHIPS = ["All", "Chinese", "Italian", "Japanese", "Korean", "Indian", "Mexican", "Quick & easy", "Healthy"];
 
@@ -119,12 +111,13 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {POPULAR.map((r) => {
+            {POPULAR_RECIPES.map((r) => {
+              const live = r.id === CREAMY_GARLIC_CHICKEN.id;
               const inner = (
                 <>
                   <div className="relative">
                     <img src={r.image} alt={r.title} className="block aspect-[4/3] w-full object-cover" loading="lazy" />
-                    {r.live ? (
+                    {live ? (
                       <span className="absolute left-3 top-3 rounded-full bg-coral px-2.5 py-1 text-xs font-semibold text-white">Cook by voice</span>
                     ) : (
                       <span className="absolute left-3 top-3 rounded-full bg-paper/90 px-2.5 py-1 text-xs font-medium text-muted">Coming soon</span>
@@ -133,14 +126,14 @@ export default function Home() {
                   <div className="p-4">
                     <h3 className="font-semibold leading-snug">{r.title}</h3>
                     <p className="mt-1.5 text-xs text-muted">
-                      {r.minutes} min · {r.kcal} kcal
+                      {r.totalMinutes} min · {nutritionLabel(r)}
                     </p>
                     <p className="mt-2 inline-block rounded-full bg-cream px-2 py-0.5 text-xs text-ink/70">{r.cuisine}</p>
                   </div>
                 </>
               );
               const cls = "group block overflow-hidden rounded-3xl bg-paper text-left shadow-card ring-1 ring-line/60 transition hover:-translate-y-0.5 hover:shadow-float";
-              return r.live ? (
+              return live ? (
                 <Link key={r.title} href="/cook" className={cls}>
                   {inner}
                 </Link>
@@ -214,11 +207,16 @@ export default function Home() {
             </div>
             <ul className="mt-4 divide-y divide-line text-sm">
               {[
-                ["Garlic Butter Shrimp", "20 min · 430 kcal", "🍤", "sky"],
-                ["Miso Soup", "15 min · 120 kcal", "🍜", "green"],
-                ["Homemade Tacos", "30 min · 500 kcal", "🌮", "coral"],
-                ["Avocado Pasta", "20 min · 450 kcal", "🥑", "green"],
-              ].map(([name, meta, emoji, tone]) => (
+                ["garlic-butter-shrimp", "🍤", "sky"],
+                ["miso-soup", "🍜", "green"],
+                ["homemade-tacos", "🌮", "coral"],
+                ["avocado-pasta", "🥑", "green"],
+              ].map(([id, emoji, tone]) => {
+                // Existing demo list; saved-recipe functionality is deferred.
+                const recipe = getRecipe(id)!;
+                const name = recipe.title;
+                const meta = `${recipe.totalMinutes} min · ${nutritionLabel(recipe)}`;
+                return (
                 <li key={name} className="flex items-center gap-3 py-2.5">
                   <FoodTile emoji={emoji} tone={tone as Tone} className="h-11 w-11 rounded-xl" size="text-xl" />
                   <span className="flex-1">
@@ -231,7 +229,8 @@ export default function Home() {
                     </svg>
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
 

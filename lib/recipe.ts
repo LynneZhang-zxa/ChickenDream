@@ -1,4 +1,6 @@
-// The Recipe type is the contract a future user-uploaded recipe must satisfy.
+import { ADDITIONAL_RECIPES } from "./recipes/catalog";
+
+// JSON-serializable contract shared by the catalog, UI, and Voice Cooking.
 
 export type Ingredient = {
   name: string;
@@ -26,9 +28,21 @@ export type Recipe = {
   title: string;
   description: string;
   cuisine: string;
+  tags: string[];
+  image: string;
+  imageKind: "photo" | "placeholder";
+  prepMinutes: number;
+  cookMinutes: number;
   servings: number;
   totalMinutes: number;
-  calories: number;
+  /** Legacy per-serving field. Null means unavailable; see nutrition for provenance. */
+  calories: number | null;
+  nutrition: { status: "unavailable"; reason: string } | {
+    status: "estimated";
+    basis: "per-serving";
+    calories: number;
+    source: string;
+  };
   emoji: string;
   ingredients: Ingredient[];
   steps: Step[];
@@ -40,9 +54,15 @@ export const CREAMY_GARLIC_CHICKEN: Recipe = {
   description:
     "Golden seared chicken cutlets in a silky garlic parmesan cream sauce. One pan, about thirty minutes.",
   cuisine: "Italian-American",
+  tags: ["chicken", "one-pan", "weeknight"],
+  image: "/recipes/creamy-garlic-chicken.jpg",
+  imageKind: "photo",
+  prepMinutes: 10,
+  cookMinutes: 20,
   servings: 2,
   totalMinutes: 30,
   calories: 610,
+  nutrition: { status: "estimated", basis: "per-serving", calories: 610, source: "Legacy SOUS estimate; not independently calculated and excludes serving accompaniments." },
   emoji: "🍗",
   ingredients: [
     { name: "boneless skinless chicken breasts", amount: 2, unit: "", note: "about one pound" },
@@ -91,10 +111,10 @@ export const CREAMY_GARLIC_CHICKEN: Recipe = {
       id: "sear-chicken",
       title: "Sear the chicken",
       instruction:
-        "Lay the cutlets in the pan and leave them alone for four to five minutes until golden. Flip and cook three to four more minutes, until there's no pink inside. Move them to a clean plate.",
+        "Lay the cutlets in the pan and leave them alone for four to five minutes until golden. Flip and cook three to four more minutes, until a thermometer in the thickest part reads 165°F (74°C). Move them to a clean plate.",
       durationSeconds: 300,
       tip: "If the pan is crowded, sear in two batches. Crowding steams the chicken instead of browning it.",
-      safety: "Chicken is safe at one hundred sixty-five degrees Fahrenheit, with no pink in the middle. Use a clean plate, not the one that held the raw chicken.",
+      safety: "Check chicken reaches 165°F (74°C) with a food thermometer; color alone is not a safety check. Use a clean plate, not the one that held raw chicken.",
       ingredients: ["boneless skinless chicken breasts"],
     },
     {
@@ -143,12 +163,28 @@ export const CREAMY_GARLIC_CHICKEN: Recipe = {
   ],
 };
 
-export const RECIPES: Record<string, Recipe> = {
-  [CREAMY_GARLIC_CHICKEN.id]: CREAMY_GARLIC_CHICKEN,
-};
+export const RECIPE_LIST: readonly Recipe[] = [CREAMY_GARLIC_CHICKEN, ...ADDITIONAL_RECIPES];
+
+export const RECIPES: Readonly<Record<string, Recipe>> = Object.fromEntries(
+  RECIPE_LIST.map((recipe) => [recipe.id, recipe]),
+);
+
+export const POPULAR_RECIPE_IDS = ["creamy-garlic-chicken", "tomato-beef-stew", "chicken-curry", "bibimbap", "garlic-butter-shrimp"] as const;
+export const POPULAR_RECIPES = POPULAR_RECIPE_IDS.map((id) => RECIPES[id]);
+
+export function listRecipes(): readonly Recipe[] {
+  return RECIPE_LIST;
+}
+
+/** Per-serving nutrition presentation with explicit estimate/unavailable status. */
+export function nutritionLabel(recipe: Recipe): string {
+  return recipe.nutrition.status === "estimated"
+    ? `~${recipe.nutrition.calories} kcal (estimated)`
+    : "Nutrition unavailable";
+}
 
 export function getRecipe(id: string): Recipe | undefined {
-  return RECIPES[id];
+  return Object.hasOwn(RECIPES, id) ? RECIPES[id] : undefined;
 }
 
 // ----- Amount formatting -----
